@@ -84,7 +84,7 @@ body > #container { height: auto; min-height: 100%; }
             $('#' + id + ' .morebtn').remove();
         }
         // Check if there are more results
-        if (!limit_regex.test(user_query) && data.results.bindings.length >= force_result_limit) {
+        if (user_query != query && data.results.bindings.length >= force_result_limit) {
             // User has not provided a limit and we got full results for our own limit
             query = limit_query(query, force_result_limit);
 
