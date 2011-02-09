@@ -24,6 +24,7 @@ h1 { font-size: 1.3em; }
 #footer a:visited { color: #666; }
 #footer a:hover { text-decoration:underline; }
 #footer a:active { text-decoration:underline; }
+.spo_results td { min-width: 8em; }
 
 html, body, #container { height: 100%; margin: 0; padding: 0; }
 body > #container { height: auto; min-height: 100%; }
@@ -34,6 +35,7 @@ body > #container { height: auto; min-height: 100%; }
 <script type="text/javascript" src=" http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 <script type="text/javascript" src="lib/codemirror.js"></script>
+<script type="text/javascript" src="lib/jquery.history.js"></script>
 <title>Deniz, an easy RDF browser</title>
 </head>
 <body>
@@ -41,17 +43,42 @@ body > #container { height: auto; min-height: 100%; }
 <div id="content">
 <script type="text/javascript">
 //<![CDATA[
+    /*
+     * Config
+     */
+    sparql_endpoint = 'http://dbpedia.org/sparql';
+    force_result_limit = 100;
+    initial_query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o }";
+
+    /*
+     * Helper
+     */
+
     jQuery.uuid4 = function () {
         bytes = []
         for (var i=0; i<16; i++) bytes.push(Math.floor(Math.random()*0x100).toString(16));
         return bytes.slice(0, 4).join('') + '-' + bytes.slice(4, 6).join('') + '-' + bytes.slice(6, 8).join('') + '-' + bytes.slice(8, 10).join('') + '-' + bytes.slice(10, 16).join('');
     };
+
+    function render_term(term) {
+        if (!term) {
+            value = '';
+        } else if (term.type == 'uri') {
+            value = '<a href="#&lt;' + term.value + '&gt;">&lt;' + term.value + '&gt;</a>';
+        } else {
+            value = '"' + term.value + '"';
+        }
+        return value;
+    }
+
+    /*
+     * Offer SPARQL query console
+     */
     // Limit results and provide "more..." button
-    var force_result_limit = 100;
     var limit_regex = /(LIMIT\s+)(\d+)([^\{\}<>]*)$/i;
     var offset_regex = /(OFFSET\s+)(\d+)([^\{\}<>]*)$/i;
 
-    function load_table(data, user_query, query, insert_into) {
+    function load_table(data, user_query, query_str, insert_into) {
         // Mark-up header
         var header_ths = [];
         $.each(data.head.vars, function(i, element) {
@@ -63,12 +90,7 @@ body > #container { height: auto; min-height: 100%; }
         $.each(data.results.bindings, function(i, row) {
             var tds = [];
             $.each(data.head.vars, function(i, element) {
-                if (row[element].type == 'uri') {
-                    value = '<a href="#">&lt;' + row[element].value + '&gt;</a>';
-                } else {
-                    value = '"' + row[element].value + '"';
-                }
-                tds.push('<td>' + value + '</td>');
+                tds.push('<td>' + render_term(row[element]) + '</td>');
             });
             data_trs.push('<tr>' + tds.join('') + '</tr>');
         });
@@ -76,26 +98,29 @@ body > #container { height: auto; min-height: 100%; }
 
         if (!insert_into) {
             id = $.uuid4();
-            html = '<div id="' + id + '"><table class="resulttable"><thead><tr>' + head + '</tr></thead><tbody class="results">' + rows + '</tbody></table></div>';
-            $('#resultsdiv').html(html);
+            $('#query_results').html('<div id="' + id + '"><table class="resulttable"><thead><tr>' + head + '</tr></thead><tbody class="results"></tbody></table></div>');
+            if (rows.length > 0) {
+                $('#' + id + ' tbody').append(rows);
+            } else {
+                $('#' + id + ' tbody').append('<tr><td colspan="3"><em>None</em></td></tr>');
+            }
         } else {
             id = insert_into;
             $('#' + id + ' tbody').append(rows);
             $('#' + id + ' .morebtn').remove();
         }
         // Check if there are more results
-        if (!limit_regex.test(user_query) && data.results.bindings.length >= force_result_limit) {
+        if (user_query != query_str && data.results.bindings.length >= force_result_limit) {
             // User has not provided a limit and we got full results for our own limit
-            query = limit_query(query, force_result_limit);
-
             // Encode and create link
-            $('#' + id).append('<a href="#" class="morebtn" onclick="requery(\'' + id + '\'); return false">More...</a>');
-            $('#' + id + ' .morebtn').data('user_query', user_query);
-            $('#' + id + ' .morebtn').data('query', query);
+            $('#' + id).append('<a href="#" class="morebtn">More...</a>');
             $('#' + id + ' .morebtn').button();
+            $('#' + id + ' .morebtn').click(function () {
+                query_str = limit_query(query_str, force_result_limit);
+                requery(user_query, query_str, id);
+                return false;
+            });
         }
-
-        return false;
     }
 
     function limit_query(query, offset) {
@@ -120,43 +145,117 @@ body > #container { height: auto; min-height: 100%; }
         return query;
     }
 
-    function do_query() {
-        user_query = editor.getCode();
-        query = limit_query(user_query)
-        if (query) {
-            $('#resultsdiv div').remove();
+    function do_query(user_query, query_str) {
+        $('.spo_results').hide();
+        $('.result_container').empty();
+        $('.query_results').show();
+        if (user_query) {
+            if (!query_str) {
+                query_str = limit_query(user_query)
+            }
+            $('result_container').empty();
             $.ajax({
                 type : 'GET',
                 dataType : 'json',
-                url : 'http://dbpedia.org/sparql',
-                data: $.param({'query' : query}),
+                url : sparql_endpoint,
+                data: $.param({'query' : query_str}),
                 //error: function(req, st, err) { console.log(err); },
                 success: function(data, textStatus, xhr) {
-                    load_table(data, user_query, query);
+                    load_table(data, user_query, query_str);
                 }
             });
         }
     }
 
-    function requery(id) {
-        user_query= $('#' + id + ' .morebtn').data('user_query');
-        query = $('#' + id + ' .morebtn').data('query');
+    function requery(user_query, query_str, id) {
         $.ajax({
             type : 'GET',
             dataType : 'json',
-            url : 'http://dbpedia.org/sparql',
-            data: $.param({'query' : query}),
+            url : sparql_endpoint,
+            data: $.param({'query' : query_str}),
             //error: function(req, st, err) { console.log(err); },
             success: function(data, textStatus, xhr) {
-                load_table(data, user_query, query, id);
+                load_table(data, user_query, query_str, id);
             }
         });
     }
 
+    /*
+     * Browse subject, predicate, object for IRIs
+     */
+    function load_spo(data, query_str, id) {
+        // Mark-up rows
+        var data_trs = [];
+        $.each(data.results.bindings, function(i, row) {
+            var tds = [];
+            $.each(['s', 'p', 'o'], function(i, element) {
+                tds.push('<td>' + render_term(row[element]) + '</td>');
+            });
+            data_trs.push('<tr>' + tds.join('') + '</tr>');
+        });
+        rows = data_trs.join('');
+
+        if ($('#' + id + ' tbody').length == 0) {
+            $('#' + id + ' .result_container').html('<table class="resulttable"><thead><tr><th>?s</th><th>?p</th><th>?o</th></tr></thead><tbody class="results"></tbody></table>');
+        }
+        if (rows.length > 0) {
+            $('#' + id + ' tbody').append(rows);
+        } else {
+            $('#' + id + ' tbody').append('<tr><td colspan="3"><em>None</em></td></tr>');
+        }
+        $('#' + id + ' .morebtn').remove();
+        // Check if there are more results
+        if (data.results.bindings.length >= force_result_limit) {
+            // Encode and create link
+            $('#' + id).append('<a href="#" class="morebtn">More...</a>');
+            $('#' + id + ' .morebtn').button();
+            $('#' + id + ' .morebtn').click(function () {
+                query_str = limit_query(query_str, force_result_limit);
+                fill_spo(query_str, id);
+                return false;
+            });
+        }
+    }
+
+    function fill_spo(query_str, id) {
+        $.ajax({
+            type : 'GET',
+            dataType : 'json',
+            url : sparql_endpoint,
+            data: $.param({'query' : query_str}),
+            //error: function(req, st, err) { console.log(err); },
+            success: function(data, textStatus, xhr) {
+                load_spo(data, query_str, id);
+            }
+        });
+    }
+
+    function do_spo(iri) {
+        $('.query_results').hide();
+        $('.result_container').empty();
+        $('.spo_results').show();
+        $.each({'subject_results': 'SELECT ?p ?o WHERE { ' + iri + ' ?p ?o} LIMIT ' + force_result_limit,
+                'predicate_results': 'SELECT ?s ?o WHERE {?s ' + iri + ' ?o} LIMIT ' + force_result_limit,
+                'object_results': 'SELECT ?s ?p WHERE {?s ?p ' + iri + '} LIMIT ' + force_result_limit},
+               function(id, query_str) {
+                   fill_spo(query_str, id);
+               });
+    }
+
+    /* Page load triggered by forward/backward user action or linking to a hashed page */
+    function load_page(hash) {
+        if (/^</.test(hash)) {
+            do_spo(hash);
+        } else {
+            do_query(hash);
+        }
+    }
+
     $(function() {
+        $.history.init(load_page);
         $('#executebtn').button();
         $('#executebtn').click(function() {
-            do_query();
+            window.location.hash = editor.getCode();
             return false;
         });
     });
@@ -167,8 +266,23 @@ body > #container { height: auto; min-height: 100%; }
 <div id="query"></div>
 <div id="buttons"><button type="submit" id="executebtn" name="executebtn"><span class="ui-button-text">Execute</span></button></div>
 </div>
+<div style="clear: both"></div>
 
-<div id="resultsdiv">
+<div id="query_results" class="query_results">
+<div class="result_container"></div>
+</div>
+<div id="subject_results" class="spo_results">
+<div class="caption">As <strong>subject</strong></div>
+<div class="result_container"></div>
+</div>
+<div id="predicate_results" class="spo_results">
+<div class="caption">As <strong>predicate</strong></div>
+<div class="result_container"></div>
+</div>
+<div id="object_results" class="spo_results">
+<div class="caption">As <strong>object</strong></div>
+<div class="result_container"></div>
+</div>
 </div>
 
 </div>
@@ -178,15 +292,16 @@ body > #container { height: auto; min-height: 100%; }
 <span style="float: right;"><a href="http://validator.w3.org/check?uri=referer"><img style="border: 0pt none;" src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Transitional" height="31" width="88"/></a></span>
 </div></div>
 <script type="text/javascript">
-content = $('#query').text();
-CodeMirrorConfig.height='6em';
-var editor = new CodeMirror($('#query')[0], {
-  parserfile: "lib/codemirror_inframe.js",
-  stylesheet: "lib/sparqlcolors.css",
-  saveFunction: do_query,
-  autoMatchParens: true,
-  noScriptCaching: true, // TODO
-  content: "SELECT ?s ?p ?o WHERE { ?s ?p ?o }"
-});
+    content = $('#query').text();
+    CodeMirrorConfig.height='6em';
+    var editor = new CodeMirror($('#query')[0], {
+        parserfile: "lib/codemirror_inframe.js",
+        stylesheet: "lib/sparqlcolors.css",
+        saveFunction: function() {
+            window.location.hash = editor.getCode();
+        },
+        autoMatchParens: true,
+        content: initial_query
+    });
 </script>
 </body></html>
