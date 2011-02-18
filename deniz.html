@@ -255,7 +255,7 @@ body > #container { height: auto; min-height: 100%; }
         $.history.init(load_page);
         $('#executebtn').button();
         $('#executebtn').click(function() {
-            window.location.hash = editor.getCode();
+            window.location.hash = editor.getCode().replace(/\n/g, ' ');
             return false;
         });
     });
@@ -297,7 +297,7 @@ body > #container { height: auto; min-height: 100%; }
         parserfile: "lib/codemirror_inframe.js",
         stylesheet: "lib/sparqlcolors.css",
         saveFunction: function() {
-            window.location.hash = editor.getCode();
+            window.location.hash = editor.getCode().replace(/\n/g, ' ');
         },
         autoMatchParens: true,
         content: initial_query
