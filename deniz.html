@@ -300,7 +300,12 @@ body > #container { height: auto; min-height: 100%; }
             window.location.hash = editor.getCode().replace(/\n/g, ' ');
         },
         autoMatchParens: true,
-        content: initial_query
+        content: function() {
+            if (window.location.hash && window.location.hash != '#')
+                return window.location.hash.replace(/^#/, '');
+            else
+                return initial_query;
+        }()
     });
 </script>
 </body></html>
