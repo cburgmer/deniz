@@ -244,6 +244,7 @@ body > #container { height: auto; min-height: 100%; }
 
     /* Page load triggered by forward/backward user action or linking to a hashed page */
     function load_page(hash) {
+        $("#browsingmenu").hide();
         if (/^</.test(hash)) {
             do_spo(hash);
         } else {
@@ -258,6 +259,33 @@ body > #container { height: auto; min-height: 100%; }
             window.location.hash = editor.getCode().replace(/\n/g, ' ');
             return false;
         });
+
+        // Activate default view if nothing selected
+        if (! window.location.hash || window.location.hash == '#') {
+            $("#browsingmenu").show();
+
+            $.ajax({
+                type : 'GET',
+                dataType : 'json',
+                url : sparql_endpoint,
+                data: $.param({'query' : "SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } } LIMIT 5"}),
+                //error: function(req, st, err) { console.log(err); },
+                success: function(data, textStatus, xhr) {
+                    lis = ['<li><em><a href="#SELECT ?s ?p ?o WHERE { ?s ?p ?o }">Default graph</a></em></li>'];
+                    $.each(data.results.bindings, function(i, row) {
+                        lis.push('<li><a href="#SELECT ?s ?p ?o WHERE { GRAPH &lt;' + row['g'].value + '&gt; { ?s ?p ?o } }">' + row['g'].value + '</a></li>');
+                    });
+                    $("#browsebygraphs").append('<ul>' + lis.join('') + '</ul>');
+                    // More button
+                    $('#browsebygraphs').append('<a href="#" class="morebtn">More...</a>');
+                    $('#browsebygraphs .morebtn').button();
+                    $('#browsebygraphs .morebtn').click(function () {
+                        window.location.hash = "SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } }";
+                        return false;
+                    });
+                }
+            });
+        }
     });
 //]]>
 </script>
@@ -282,6 +310,14 @@ body > #container { height: auto; min-height: 100%; }
 <div id="object_results" class="spo_results">
 <div class="caption">As <strong>object</strong></div>
 <div class="result_container"></div>
+</div>
+
+<div id="browsingmenu" style="display: none;">
+
+<div id="browsebygraphs">
+<div class="caption">Browse store by <strong>graphs</strong></div>
+</div>
+
 </div>
 
 </div>
