@@ -2,7 +2,7 @@
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
-<link type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" rel="stylesheet"/>
+<link type="text/css" href="lib/jquery-ui.css" rel="stylesheet"/>
 <style type="text/css">
 <!--
 body { font-family: Verdana,Arial,sans-serif; }
@@ -32,8 +32,8 @@ body > #container { height: auto; min-height: 100%; }
 #footer { clear: both; position: relative; z-index: 10; height: 3.5em; margin-top: -3.5em; }
 -->
 </style>
-<script type="text/javascript" src=" http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
+<script type="text/javascript" src="lib/jquery.js"></script>
+<script type="text/javascript" src="lib/jquery-ui.js"></script>
 <script type="text/javascript" src="lib/codemirror.js"></script>
 <script type="text/javascript" src="lib/jquery.history.js"></script>
 <title>Deniz, an easy RDF browser</title>
@@ -244,18 +244,78 @@ body > #container { height: auto; min-height: 100%; }
 
     /* Page load triggered by forward/backward user action or linking to a hashed page */
     function load_page(hash) {
-        if (/^</.test(hash)) {
-            do_spo(hash);
+        if (hash == '' || hash == '#') {
+            $('.spo_results').hide();
+            $('.result_container').empty();
+            $('.query_results').hide();
+            $('#browsingmenu').show();
+
+            load_browsingmenu();
         } else {
-            do_query(hash);
+            $('#browsingmenu').hide();
+            if (/^</.test(hash)) {
+                do_spo(hash);
+            } else {
+                do_query(hash);
+            }
         }
+    }
+
+    function load_browsingmenu() {
+        // Query named graphs
+        $.ajax({
+            type : 'GET',
+            dataType : 'json',
+            url : sparql_endpoint,
+            data: $.param({'query' : "SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } } LIMIT 5"}),
+            //error: function(req, st, err) { console.log(err); },
+            success: function(data, textStatus, xhr) {
+                lis = ['<li><em><a href="#SELECT ?s ?p ?o WHERE { ?s ?p ?o }">Default graph</a></em></li>'];
+                $.each(data.results.bindings, function(i, row) {
+                    lis.push('<li><a href="#SELECT ?s ?p ?o WHERE { GRAPH &lt;' + row['g'].value + '&gt; { ?s ?p ?o } }">' + row['g'].value + '</a></li>');
+                });
+                $('#browsebygraphs .result_container').empty();
+                $('#browsebygraphs .result_container').append('<ul>' + lis.join('') + '</ul>');
+                // More button
+                $('#browsebygraphs .result_container').append('<a href="#" class="morebtn">More...</a>');
+                $('#browsebygraphs .result_container .morebtn').button();
+                $('#browsebygraphs .result_container .morebtn').click(function () {
+                    window.location.hash = "SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } }";
+                    return false;
+                });
+            }
+        });
+
+        // Query concepts
+        $.ajax({
+            type : 'GET',
+            dataType : 'json',
+            url : sparql_endpoint,
+            data: $.param({'query' : "SELECT DISTINCT ?c WHERE { ?s a ?c } LIMIT 6"}),
+            //error: function(req, st, err) { console.log(err); },
+            success: function(data, textStatus, xhr) {
+                lis = [];
+                $.each(data.results.bindings, function(i, row) {
+                    lis.push('<li>' + render_term(row['c']) + '</li>');
+                });
+                $('#browsebyconcepts .result_container').empty();
+                $('#browsebyconcepts .result_container').append('<ul>' + lis.join('') + '</ul>');
+                // More button
+                $('#browsebyconcepts .result_container').append('<a href="#" class="morebtn">More...</a>');
+                $('#browsebyconcepts .result_container .morebtn').button();
+                $('#browsebyconcepts .result_container .morebtn').click(function () {
+                    window.location.hash = "SELECT DISTINCT ?c WHERE { ?s a ?c }";
+                    return false;
+                });
+            }
+        });
     }
 
     $(function() {
         $.history.init(load_page);
         $('#executebtn').button();
         $('#executebtn').click(function() {
-            window.location.hash = editor.getCode();
+            window.location.hash = editor.getCode().replace(/\n/g, ' ');
             return false;
         });
     });
@@ -283,6 +343,19 @@ body > #container { height: auto; min-height: 100%; }
 <div class="caption">As <strong>object</strong></div>
 <div class="result_container"></div>
 </div>
+
+<div id="browsingmenu" style="display: none;">
+
+<div id="browsebygraphs">
+<div class="caption">Browse store by <strong>graphs</strong></div>
+<div class="result_container"></div>
+</div>
+
+<div id="browsebyconcepts">
+<div class="caption">Browse store by <strong>concepts</strong></div>
+<div class="result_container"></div>
+</div>
+
 </div>
 
 </div>
@@ -298,10 +371,15 @@ body > #container { height: auto; min-height: 100%; }
         parserfile: "lib/codemirror_inframe.js",
         stylesheet: "lib/sparqlcolors.css",
         saveFunction: function() {
-            window.location.hash = editor.getCode();
+            window.location.hash = editor.getCode().replace(/\n/g, ' ');
         },
         autoMatchParens: true,
-        content: initial_query
+        content: function() {
+            if (window.location.hash && window.location.hash != '#')
+                return window.location.hash.replace(/^#/, '');
+            else
+                return initial_query;
+        }()
     });
 </script>
 </body></html>
