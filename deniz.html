@@ -49,6 +49,7 @@ body > #container { height: auto; min-height: 100%; }
     sparql_endpoint = 'http://dbpedia.org/sparql';
     force_result_limit = 100;
     initial_query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o }";
+    title_prefix = "Deniz, an easy RDF browser";
 
     /*
      * Helper
@@ -146,6 +147,7 @@ body > #container { height: auto; min-height: 100%; }
     }
 
     function do_query(user_query, query_str) {
+        document.title = title_prefix + ': ' + user_query;
         $('.spo_results').hide();
         $('.result_container').empty();
         $('.query_results').show();
@@ -231,6 +233,7 @@ body > #container { height: auto; min-height: 100%; }
     }
 
     function do_spo(iri) {
+        document.title = title_prefix + ': ' + iri;
         $('.query_results').hide();
         $('.result_container').empty();
         $('.spo_results').show();
@@ -251,6 +254,7 @@ body > #container { height: auto; min-height: 100%; }
             $('#browsingmenu').show();
 
             load_browsingmenu();
+            document.title = title_prefix;
         } else {
             $('#browsingmenu').hide();
             if (/^</.test(hash)) {
