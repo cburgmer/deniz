@@ -100,7 +100,7 @@ body > #container { height: auto; min-height: 100%; }
 
         if (!insert_into) {
             id = $.uuid4();
-            $('#query_results').html('<div id="' + id + '"><table class="resulttable"><thead><tr>' + head + '</tr></thead><tbody class="results"></tbody></table></div>');
+            $('#query_results .result_container').html('<div id="' + id + '"><table class="resulttable"><thead><tr>' + head + '</tr></thead><tbody class="results"></tbody></table></div>');
             if (rows.length > 0) {
                 $('#' + id + ' tbody').append(rows);
             } else {
