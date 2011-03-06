@@ -8,7 +8,7 @@
 body { font-family: Verdana,Arial,sans-serif; }
 h1 { font-size: 1.3em; }
 #content { padding: 6px; }
-#sparql { width: 50em; }
+#sparql { width: 100%; }
 #query { width: 100%; height: 6em; border: 1px #ddd solid; padding: 3px; }
 .caption { margin-bottom: 5px; }
 #buttons button { float: right; }
@@ -49,6 +49,7 @@ body > #container { height: auto; min-height: 100%; }
     sparql_endpoint = 'http://dbpedia.org/sparql';
     force_result_limit = 100;
     initial_query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o }";
+    title_prefix = "Deniz, an easy RDF browser";
 
     /*
      * Helper
@@ -146,6 +147,7 @@ body > #container { height: auto; min-height: 100%; }
     }
 
     function do_query(user_query, query_str) {
+        document.title = title_prefix + ': ' + user_query;
         $('.spo_results').hide();
         $('.result_container').empty();
         $('.query_results').show();
@@ -153,7 +155,7 @@ body > #container { height: auto; min-height: 100%; }
             if (!query_str) {
                 query_str = limit_query(user_query)
             }
-            $('result_container').empty();
+            $('#query_results .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
             $.ajax({
                 type : 'GET',
                 dataType : 'json',
@@ -231,9 +233,11 @@ body > #container { height: auto; min-height: 100%; }
     }
 
     function do_spo(iri) {
+        document.title = title_prefix + ': ' + iri;
         $('.query_results').hide();
         $('.result_container').empty();
         $('.spo_results').show();
+        $('.spo_results .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
         $.each({'subject_results': 'SELECT ?p ?o WHERE { ' + iri + ' ?p ?o} LIMIT ' + force_result_limit,
                 'predicate_results': 'SELECT ?s ?o WHERE {?s ' + iri + ' ?o} LIMIT ' + force_result_limit,
                 'object_results': 'SELECT ?s ?p WHERE {?s ?p ' + iri + '} LIMIT ' + force_result_limit},
@@ -251,6 +255,7 @@ body > #container { height: auto; min-height: 100%; }
             $('#browsingmenu').show();
 
             load_browsingmenu();
+            document.title = title_prefix;
         } else {
             $('#browsingmenu').hide();
             if (/^</.test(hash)) {
@@ -263,6 +268,7 @@ body > #container { height: auto; min-height: 100%; }
 
     function load_browsingmenu() {
         // Query named graphs
+        $('#browsebygraphs .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
         $.ajax({
             type : 'GET',
             dataType : 'json',
@@ -287,6 +293,7 @@ body > #container { height: auto; min-height: 100%; }
         });
 
         // Query concepts
+        $('#browsebyconcepts .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
         $.ajax({
             type : 'GET',
             dataType : 'json',
@@ -318,6 +325,7 @@ body > #container { height: auto; min-height: 100%; }
             window.location.hash = editor.getCode().replace(/\n/g, ' ');
             return false;
         });
+        $('#query').resizable({ alsoResize: '.CodeMirror-wrapping' });
     });
 //]]>
 </script>
