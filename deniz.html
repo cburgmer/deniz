@@ -155,7 +155,7 @@ body > #container { height: auto; min-height: 100%; }
             if (!query_str) {
                 query_str = limit_query(user_query)
             }
-            $('result_container').empty();
+            $('#query_results .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
             $.ajax({
                 type : 'GET',
                 dataType : 'json',
@@ -237,6 +237,7 @@ body > #container { height: auto; min-height: 100%; }
         $('.query_results').hide();
         $('.result_container').empty();
         $('.spo_results').show();
+        $('.spo_results .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
         $.each({'subject_results': 'SELECT ?p ?o WHERE { ' + iri + ' ?p ?o} LIMIT ' + force_result_limit,
                 'predicate_results': 'SELECT ?s ?o WHERE {?s ' + iri + ' ?o} LIMIT ' + force_result_limit,
                 'object_results': 'SELECT ?s ?p WHERE {?s ?p ' + iri + '} LIMIT ' + force_result_limit},
@@ -267,6 +268,7 @@ body > #container { height: auto; min-height: 100%; }
 
     function load_browsingmenu() {
         // Query named graphs
+        $('#browsebygraphs .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
         $.ajax({
             type : 'GET',
             dataType : 'json',
@@ -291,6 +293,7 @@ body > #container { height: auto; min-height: 100%; }
         });
 
         // Query concepts
+        $('#browsebyconcepts .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
         $.ajax({
             type : 'GET',
             dataType : 'json',
