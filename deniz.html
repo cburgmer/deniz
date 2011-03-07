@@ -11,7 +11,11 @@ h1 a { text-decoration: none; color: black; }
 #content { padding: 6px; }
 #sparql { width: 99%; }
 #sparqloptions { float: right; }
-#sparqloptions input { width: 20em; }
+#endpointoption form { display: inline-block; }
+#endpointoption input { width: 20em; display: none; }
+#endpointoption .optionvalue { width: 20em; }
+#endpointoption .optionvalue .edithint { visibility: hidden; margin-left: 5px; }
+#endpointoption .optionvalue:hover .edithint { visibility: visible; }
 #endpoint-ajax-loader { position: relative; left: -20px; vertical-align: middle; display: none; }
 #query { width: 100%; height: 6em; border: 1px #ddd solid; padding: 3px; }
 .caption { margin-bottom: 5px; }
@@ -326,9 +330,9 @@ body > #container { height: auto; min-height: 100%; }
     function update_sparql_endpoint() {
         $('#endpoint-ajax-loader').show();
         // reset css
-        $('#endpoint').css("background-color", "");
+        $('#endpointoption input').css("background-color", "");
 
-        endpoint = $('#endpoint').val();
+        endpoint = $('#endpointoption input').val();
         $.ajax({
             url: endpoint,
             data: $.param({'query' : "ASK {?s ?p ?o}"}),
@@ -337,14 +341,17 @@ body > #container { height: auto; min-height: 100%; }
                     $('#endpoint-ajax-loader').hide();
                     sparql_endpoint = endpoint;
                     $.cookie('deniz_endpoint', sparql_endpoint);
+                    $('#endpointoption input').hide();
+                    $('#endpointoption .optionvalue span').html(sparql_endpoint);
+                    $('#endpointoption .optionvalue').show();
                 } else {
                     $('#endpoint-ajax-loader').hide();
-                    $('#endpoint').css("background-color", "red");
+                    $('#endpointoption input').css("background-color", "red");
                 }
             },
             error: function(req, st, err) {
                 $('#endpoint-ajax-loader').hide();
-                $('#endpoint').css("background-color", "red");
+                $('#endpointoption input').css("background-color", "red");
             }
         });
     }
@@ -363,8 +370,21 @@ body > #container { height: auto; min-height: 100%; }
         if (endpoint) {
             sparql_endpoint = endpoint;
         }
-        $('#endpoint').val(sparql_endpoint);
-        $('#endpoint').change(update_sparql_endpoint);
+        // Show normal text by default and switch to form on click
+        $('#endpointoption .optionvalue span').html(sparql_endpoint);
+        $('#endpointoption .optionvalue').click(function() {
+            $('#endpointoption input').val(sparql_endpoint);
+            $('#endpointoption .optionvalue').hide();
+            $('#endpointoption input').show();
+            $('#endpointoption input').focus();
+        });
+        $('#endpointoption input').change(update_sparql_endpoint);
+        $('#endpointoption input').blur(function() {
+            if (sparql_endpoint == $('#endpointoption input').val()) {
+                $('#endpointoption .optionvalue').show();
+                $('#endpointoption input').hide();
+            }
+        });
         $('#sparqloptionsform').submit(function() {
             return false;
         });
@@ -372,7 +392,7 @@ body > #container { height: auto; min-height: 100%; }
 //]]>
 </script>
 <h1><a href="#">Deniz</a>, an easy RDF browser</h1>
-<div id="sparql"><div id="sparqloptions"><form name="sparqloptionsform" id="sparqloptionsform"><span>Endpoint: </span><input type="text" name="endpoint" id="endpoint"/><span id="endpoint-ajax-loader"><img src="lib/ajax-loader-small.gif" alt="loading"/></span></form></div><div class="caption">Input and execute your SPARQL query here:</div>
+<div id="sparql"><div id="sparqloptions"><span id="endpointoption">Endpoint: <span class="optionvalue" title="Click to edit"><span></span><img class="edithint" src="lib/pencil.png" alt="edit"/></span><form name="sparqloptionsform" id="sparqloptionsform"><input type="text" name="endpoint"/><span id="endpoint-ajax-loader"><img src="lib/ajax-loader-small.gif" alt="loading"/></span></form></span></div><div class="caption">Input and execute your SPARQL query here:</div>
 <div id="query"></div>
 <div id="buttons"><button type="submit" id="executebtn" name="executebtn"><span class="ui-button-text">Execute</span></button></div>
 </div>

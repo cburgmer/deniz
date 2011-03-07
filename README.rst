@@ -1,6 +1,6 @@
 Deniz is a simple RDF browser written in Javascript.
 
-Currently by default dbpedia.org is used as a RDF store back-end.
+You can use any SPARQL protocol (http://www.w3.org/TR/rdf-sparql-protocol/) compatible SPARQL service as back-end.
 
 Example
 =======
