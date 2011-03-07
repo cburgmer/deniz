@@ -12,6 +12,7 @@ h1 a { text-decoration: none; color: black; }
 #sparql { width: 99%; }
 #sparqloptions { float: right; }
 #sparqloptions input { width: 20em; }
+#endpoint-ajax-loader { position: relative; left: -20px; vertical-align: middle; display: none; }
 #query { width: 100%; height: 6em; border: 1px #ddd solid; padding: 3px; }
 .caption { margin-bottom: 5px; }
 #buttons button { float: right; }
@@ -322,6 +323,32 @@ body > #container { height: auto; min-height: 100%; }
         });
     }
 
+    function update_sparql_endpoint() {
+        $('#endpoint-ajax-loader').show();
+        // reset css
+        $('#endpoint').css("background-color", "");
+
+        endpoint = $('#endpoint').val();
+        $.ajax({
+            url: endpoint,
+            data: $.param({'query' : "ASK {?s ?p ?o}"}),
+            success: function(data, textStatus, xhr) {
+                if (data) {
+                    $('#endpoint-ajax-loader').hide();
+                    sparql_endpoint = endpoint;
+                    $.cookie('deniz_endpoint', sparql_endpoint);
+                } else {
+                    $('#endpoint-ajax-loader').hide();
+                    $('#endpoint').css("background-color", "red");
+                }
+            },
+            error: function(req, st, err) {
+                $('#endpoint-ajax-loader').hide();
+                $('#endpoint').css("background-color", "red");
+            }
+        });
+    }
+
     $(function() {
         $.history.init(load_page);
         $('#executebtn').button();
@@ -337,10 +364,7 @@ body > #container { height: auto; min-height: 100%; }
             sparql_endpoint = endpoint;
         }
         $('#endpoint').val(sparql_endpoint);
-        $('#endpoint').change(function() {
-            sparql_endpoint = $('#endpoint').val();
-            $.cookie('deniz_endpoint', sparql_endpoint);
-        });
+        $('#endpoint').change(update_sparql_endpoint);
         $('#sparqloptionsform').submit(function() {
             return false;
         });
@@ -348,7 +372,7 @@ body > #container { height: auto; min-height: 100%; }
 //]]>
 </script>
 <h1><a href="#">Deniz</a>, an easy RDF browser</h1>
-<div id="sparql"><div id="sparqloptions"><form name="sparqloptionsform" id="sparqloptionsform"><span>Endpoint: </span><input type="text" name="endpoint" id="endpoint"/></form></div><div class="caption">Input and execute your SPARQL query here:</div>
+<div id="sparql"><div id="sparqloptions"><form name="sparqloptionsform" id="sparqloptionsform"><span>Endpoint: </span><input type="text" name="endpoint" id="endpoint"/><span id="endpoint-ajax-loader"><img src="lib/ajax-loader-small.gif" alt="loading"/></span></form></div><div class="caption">Input and execute your SPARQL query here:</div>
 <div id="query"></div>
 <div id="buttons"><button type="submit" id="executebtn" name="executebtn"><span class="ui-button-text">Execute</span></button></div>
 </div>
