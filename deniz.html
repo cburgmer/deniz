@@ -357,6 +357,12 @@ body > #container { height: auto; min-height: 100%; }
     }
 
     $(function() {
+        // Set sparql endpoint
+        endpoint = $.cookie('deniz_endpoint');
+        if (endpoint) {
+            sparql_endpoint = endpoint;
+        }
+
         $.history.init(load_page);
         $('#executebtn').button();
         $('#executebtn').click(function() {
@@ -365,11 +371,6 @@ body > #container { height: auto; min-height: 100%; }
         });
         $('#query').resizable({ alsoResize: '.CodeMirror-wrapping' });
 
-        // Set sparql endpoint
-        endpoint = $.cookie('deniz_endpoint');
-        if (endpoint) {
-            sparql_endpoint = endpoint;
-        }
         // Show normal text by default and switch to form on click
         $('#endpointoption .optionvalue span').html(sparql_endpoint);
         $('#endpointoption .optionvalue').click(function() {
