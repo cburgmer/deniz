@@ -75,6 +75,8 @@ body > #container { height: auto; min-height: 100%; }
             value = '';
         } else if (term.type == 'uri') {
             value = '<a href="#&lt;' + term.value + '&gt;">&lt;' + term.value + '&gt;</a>';
+        } else if (term.type == 'typed-literal') {
+            value = '"' + term.value + '"^^&lt;' + term.datatype + '&gt;';
         } else {
             value = '"' + term.value + '"';
         }
