@@ -337,7 +337,8 @@ body > #container { height: auto; min-height: 100%; }
         endpoint = $('#endpointoption input').val();
         $.ajax({
             url: endpoint,
-            data: $.param({'query' : "ASK {?s ?p ?o}"}),
+            data: $.param({'query' : "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 1"}),
+            //data: $.param({'query' : "ASK {?s ?p ?o}"}), // Use SELECT should be supported by all back-ends
             success: function(data, textStatus, xhr) {
                 if (data) {
                     $('#endpoint-ajax-loader').hide();
