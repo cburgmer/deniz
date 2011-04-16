@@ -1,11 +1,13 @@
+# -*- coding: utf-8 -*-
 import os
+import urllib
 import urllib2
 from lettuce import before, after, world, step
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import lettuce_webdriver.webdriver
 from lettuce_webdriver.util import find_field_by_name
-from nose.tools import assert_equals
+from nose.tools import assert_equals, assert_true
 
 from util import TestEndpoint
 
@@ -15,26 +17,23 @@ def setup_browser():
     world.test_endpoint = TestEndpoint()
     world.test_endpoint.start()
 
-    world.endpoint = 'http://%s:%d/sparql' % (world.test_endpoint.host,
-                                              world.test_endpoint.port)
-
-    # Try connecting to the endpoint
     try:
-        urllib2.urlopen(world.endpoint + "?query=SELECT+%3Fs+%3Fp+%3Fo+WHERE+%7B+%3Fs+%3Fp+%3Fo+%7D+LIMIT+1").read()
-    except:
-        _stop_test_endpoint()
-        raise
+        world.endpoint = 'http://%s:%d/sparql' % (world.test_endpoint.host,
+                                                  world.test_endpoint.port)
 
-    # Start the browser and load deniz
-    world.browser = webdriver.Firefox()
-    world.file_path = 'file://' + os.path.abspath(os.path.join('deniz.html'))
+        # Try connecting to the endpoint
+        q = urllib.urlencode({'query': 'SELECT ?s ?p ?o {?s ?p ?o} LIMIT 1'})
+        urllib2.urlopen(world.endpoint + '?' + q).read()
 
-    # Set the endpoint cookie so we test against the local server
-    world.browser.get(world.file_path)
-    _set_endpoint(world.endpoint)
-    world.browser.refresh()
+        # Start the browser and load deniz
+        world.browser = webdriver.Firefox()
+        world.file_path = 'file://' + os.path.abspath(os.path.join('deniz.html'))
 
-    try:
+        # Set the endpoint cookie so we test against the local server
+        world.browser.get(world.file_path)
+        _set_endpoint(world.endpoint)
+        world.browser.refresh()
+
         assert_equals(world.endpoint, _get_endpoint())
     except:
         _stop_test_endpoint()
@@ -73,9 +72,31 @@ def _get_endpoint():
         return urllib2.unquote(cookie['value'])
 
 @step('I open deniz')
-def visit(step):
+def open_deniz(step):
     world.browser.get(world.file_path)
 
 @step('I set the endpoint to "(.*?)"')
 def set_endpoint(step, value):
     _set_endpoint(value)
+
+@step(u'Then I can click "(.*)"')
+def i_can_click(step, name):
+    button = (world.browser.find_element_by_xpath('//button[contains(., %s)]' %
+             (name, ))
+             or
+             world.browser.find_element_by_xpath('//a[contains(., %s)]' %
+             (name, )))
+    assert_true(button.is_displayed())
+
+@step(u'Then I could query graph "(.*)"')
+def i_could_query_graph(step, value):
+    return world.browser.find_element_by_xpath('//*[@id="browsebygraphs"]/*[@class="result_container"]//li[contains(., "%s")]' %
+        (value, ))
+
+@step(u'Then the store\'s graphs are loaded')
+def the_store_graphs_are_loaded(step):
+    return world.browser.find_element_by_xpath('//*[@id="browsebygraphs"]//*[contains(., "More")]')
+
+@step(u'Then the store\'s concepts are loaded')
+def the_store_s_concepts_are_loaded(step):
+    return world.browser.find_element_by_xpath('//*[@id="browsebyconcepts"]//*[contains(., "More")]')
