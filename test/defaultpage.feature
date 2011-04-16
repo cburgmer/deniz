@@ -10,7 +10,7 @@ Feature: Opening the default page
 
     Scenario: I should be able to execute a query
         Given I open deniz
-        Then I can click "Execute"
+        Then I can press "Execute"
 
     Scenario: Default page can query default graph
         Given I open deniz

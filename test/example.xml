@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+   xmlns:foaf="http://xmlns.com/foaf/0.1/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+>
+  <rdf:Description rdf:about="http://example.com/people/Mary">
+    <foaf:familyName>Miller</foaf:familyName>
+    <foaf:knows rdf:resource="http://example.com/people/John"/>
+    <foaf:knows rdf:resource="http://example.com/people/Jane"/>
+    <foaf:givenName>Mary</foaf:givenName>
+    <foaf:gender>female</foaf:gender>
+    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://example.com/people/John">
+    <foaf:familyName>Jackson</foaf:familyName>
+    <foaf:givenName>John</foaf:givenName>
+    <foaf:gender>male</foaf:gender>
+    <foaf:age rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">40</foaf:age>
+    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://example.com/people/Jane">
+    <foaf:familyName>Jenssen</foaf:familyName>
+    <foaf:knows rdf:resource="http://example.com/people/Mary"/>
+    <foaf:knows rdf:resource="http://example.com/people/John"/>
+    <foaf:givenName>Jane</foaf:givenName>
+    <foaf:gender>female</foaf:gender>
+    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+  </rdf:Description>
+</rdf:RDF>

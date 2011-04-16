@@ -6,7 +6,7 @@ from lettuce import before, after, world, step
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import lettuce_webdriver.webdriver
-from lettuce_webdriver.util import find_field_by_name
+from lettuce_webdriver.util import find_field_by_name, find_button
 from nose.tools import assert_equals, assert_true
 
 from util import TestEndpoint
@@ -50,6 +50,10 @@ def stop_endpoint(total):
 def close_browser(total):
     world.browser.quit()
 
+@after.each_scenario
+def clear_data(scenario):
+    world.test_endpoint.clear_data()
+
 def _set_endpoint(value):
     # Get the span that triggers the form visibility
     elem = world.browser.find_element_by_xpath('//*[@id="endpointoption"]/span[@class="optionvalue"]')
@@ -75,18 +79,18 @@ def _get_endpoint():
 def open_deniz(step):
     world.browser.get(world.file_path)
 
+@step('I have data')
+def have_data(step):
+    # Fill in example data
+    world.test_endpoint.load_data('test/example.xml')
+
 @step('I set the endpoint to "(.*?)"')
 def set_endpoint(step, value):
     _set_endpoint(value)
 
-@step(u'Then I can click "(.*)"')
-def i_can_click(step, name):
-    button = (world.browser.find_element_by_xpath('//button[contains(., %s)]' %
-             (name, ))
-             or
-             world.browser.find_element_by_xpath('//a[contains(., %s)]' %
-             (name, )))
-    assert_true(button.is_displayed())
+@step(u'Then I can press "(.*)"')
+def i_can_press(step, name):
+    return find_button(world.browser, name)
 
 @step(u'Then I could query graph "(.*)"')
 def i_could_query_graph(step, value):
