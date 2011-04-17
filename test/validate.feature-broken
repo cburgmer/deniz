@@ -1,0 +1,4 @@
+    Scenario: The validator gives thumbs up
+        Given I open deniz
+        Then the page validates correctly
+
