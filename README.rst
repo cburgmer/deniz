@@ -29,33 +29,8 @@ entry.
 Exposing to CORS with sparqlprocotolproxy
 -----------------------------------------
 A Python proxy server called `sparqlprocotolproxy` offers a proxy to a SPARQL
-endpoint with CORS support. See https://github.com/cburgmer/sparqlprotocolproxy
+endpoint and supports CORS. See https://github.com/cburgmer/sparqlprotocolproxy
 for more information.
-
-Testing
-=======
-Testing is built on Python, Selenium and Lettuce
-
-To run unit tests install:
-  * Python (>= 2.6, < 3.0)
-  * lettuce_webdriver, http://pypi.python.org/pypi/lettuce_webdriver
-  * nose, http://pypi.python.org/pypi/nose
-  * sparqlprotocolproxy, http://github.com/cburgmer/sparqlprotocolproxy
-  * surf.rdflib, http://pypi.python.org/pypi/surf.rdflib
-
-Installing using pip (& easy_install)
--------------------------------------
-Run::
-
-    $ pip install lettuce_webdriver nose
-    $ pip install -e git://github.com/cburgmer/sparqlprotocolproxy.git
-    $ easy_install surf.rdflib # currently not installable by pip
-
-Running the tests
------------------
-Simply::
-
-    $ lettuce test/
 
 Contact
 =======
