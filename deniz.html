@@ -366,6 +366,13 @@ body > #container { height: auto; min-height: 100%; }
             sparql_endpoint = endpoint;
         }
 
+        // Tell jQuery to always tell the server that we expect sparql results in JSON
+        $.ajaxSetup({
+            beforeSend: function(req) {
+                req.setRequestHeader("Accept", "application/sparql-results+json");
+            }
+        });
+
         $.history.init(load_page);
         $('#executebtn').button();
         $('#executebtn').click(function() {
