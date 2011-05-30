@@ -354,6 +354,17 @@ body > #container { height: auto; min-height: 100%; }
                     $('#endpointoption input').hide();
                     $('#endpointoption .optionvalue span').html(sparql_endpoint);
                     $('#endpointoption .optionvalue').show();
+
+                    // Add endpoint to combobox
+                    if ($("#endpoints option[value='" + sparql_endpoint + "']").length == 0) {
+                        $("<option/>").prop("value", sparql_endpoint).appendTo("#endpoints");
+                        
+                        // Remember the endpoint
+                        var user_endpoints_cookie = $.cookie('deniz_user_endpoints'),
+                            user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array();
+                        user_endpoints.push(sparql_endpoint);
+                        $.cookie('deniz_user_endpoints', user_endpoints.join(','));
+                    }
                 } else {
                     $('#endpoint-ajax-loader').hide();
                     $('#endpointoption input').css("background-color", "red");
@@ -372,6 +383,15 @@ body > #container { height: auto; min-height: 100%; }
         if (endpoint) {
             sparql_endpoint = endpoint;
         }
+
+        // Add user endpoints to combobox
+        var user_endpoints_cookie = $.cookie('deniz_user_endpoints'),
+            user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array();
+        $.each(user_endpoints, function(idx, endpoint) {
+            if ($("#endpoints option[value='" + endpoint + "']").length == 0) {
+                $("<option/>").prop("value", endpoint).appendTo("#endpoints");
+            }
+        });
 
         // Tell jQuery to always tell the server that we expect sparql results in JSON
         $.ajaxSetup({
@@ -410,10 +430,32 @@ body > #container { height: auto; min-height: 100%; }
 //]]>
 </script>
 <h1><a href="#">Deniz</a>, an easy RDF browser</h1>
-<div id="sparql"><div id="sparqloptions"><div id="endpointoption">Endpoint: <span class="optionvalue" title="Click to edit"><span></span><img class="edithint" src="lib/pencil.png" alt="edit"/></span><form action="#" name="sparqloptionsform" id="sparqloptionsform"><input type="text" name="endpoint"/><span id="endpoint-ajax-loader"><img src="lib/ajax-loader-small.gif" alt="loading"/></span></form></div></div>
-<div class="caption">Input and execute your SPARQL query here:</div>
-<div id="query"></div>
-<div id="buttons"><button type="submit" id="executebtn" name="executebtn"><span class="ui-button-text">Execute</span></button></div>
+<div id="sparql">
+    <div id="sparqloptions">
+        <div id="endpointoption">Endpoint:
+            <span class="optionvalue" title="Click to edit">
+                <span></span>
+                <img class="edithint" src="lib/pencil.png" alt="edit"/>
+            </span>
+            <form action="#" name="sparqloptionsform" id="sparqloptionsform">
+                <input list="endpoints" type="url" name="endpoint"/>
+                <datalist id="endpoints">
+                    <option value="http://dbpedia.org/sparql"></option>
+                    <option value="http://qcrumb.com/sparql"></option>
+                    <option value="http://data.semanticweb.org/sparql"></option>
+                    <option value="http://uriburner.com/sparql/"></option>
+                </datalist>
+                <span id="endpoint-ajax-loader"><img src="lib/ajax-loader-small.gif" alt="loading"/></span>
+            </form>
+        </div>
+    </div>
+    <div class="caption">Input and execute your SPARQL query here:</div>
+    <div id="query"></div>
+    <div id="buttons">
+        <button type="submit" id="executebtn" name="executebtn">
+            <span class="ui-button-text">Execute</span>
+        </button>
+    </div>
 </div>
 <div style="clear: both"></div>
 
