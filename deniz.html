@@ -330,11 +330,18 @@ body > #container { height: auto; min-height: 100%; }
     }
 
     function update_sparql_endpoint() {
+        endpoint = $('#endpointoption input').val();
+
+        // If endpoint is empty assume user wants to cancel
+        if (!endpoint) {
+            $('#endpointoption input').val(sparql_endpoint);
+            return
+        }
+
         $('#endpoint-ajax-loader').show();
         // reset css
         $('#endpointoption input').css("background-color", "");
 
-        endpoint = $('#endpointoption input').val();
         $.ajax({
             url: endpoint,
             data: $.param({'query' : "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 1"}),
