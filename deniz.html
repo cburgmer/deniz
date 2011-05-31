@@ -8,16 +8,21 @@
 body { font-family: Verdana,Arial,sans-serif; }
 h1 { font-size: 1.3em; }
 h1 a { text-decoration: none; color: black; }
+.ui-widget { font-size: 1em; }
+.ui-menu { z-index: 1002 !important } /* dropdown menu is overlapped by resize handel */
 #content { padding: 6px; }
-#sparql { width: 99%; }
+/* Endpoint input widget */
 #sparqloptions { float: right; }
 #endpointoption form { display: inline-block; }
-#endpointoption input { width: 20em; display: none; }
-#endpointoption .optionvalue { width: 20em; }
-#endpointoption .optionvalue .edithint { visibility: hidden; margin-left: 5px; }
-#endpointoption .optionvalue:hover .edithint { visibility: visible; }
-#endpoint-ajax-loader { position: relative; left: -20px; vertical-align: middle; display: none; }
-#query { width: 100%; height: 6em; border: 1px #ddd solid; padding: 3px; }
+#endpointoption input { width: 20em; border: 1px #ddd solid; height: 20px;}
+#endpoint-container { position: relative; }
+#endpoint-container a { position: absolute; top: 0; right: 5px; height: 20px; border: none; background: none; font: heavy blue 25px/25px arial, sans-serif; text-decoration: none; color: #aaf; }
+#endpoint-container a:hover { color: #55f; }
+#endpoint-ajax-loader { position: absolute; top: 0; right: 5px; height: 24px; width: 16px; vertical-align: middle; display: none; background: url("lib/ajax-loader-small.gif") 0 center no-repeat; }
+.ui-autocomplete li.user + li.default { border-top: solid lightgray 1px; }
+.ui-autocomplete li { font-size: 0.9em; }
+/* Query */
+#query { height: 6em; border: 1px #ddd solid; padding: 3px; }
 .caption { margin-bottom: 5px; }
 #buttons button { float: right; }
 .resulttable { border-spacing: 0; clear: both; margin-bottom: 20px; }
@@ -55,10 +60,15 @@ body > #container { height: auto; min-height: 100%; }
     /*
      * Config
      */
-    sparql_endpoint = 'http://dbpedia.org/sparql';
     force_result_limit = 100;
     initial_query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o }";
     title_prefix = "Deniz, an easy RDF browser";
+    default_endpoints = ["http://dbpedia.org/sparql",
+                         "http://qcrumb.com/sparql",
+                         "http://data.semanticweb.org/sparql",
+                         "http://uriburner.com/sparql/",
+                         "http://semantic.ckan.net/sparql/"],
+    sparql_endpoint = default_endpoints[0];
 
     /*
      * Helper
@@ -329,35 +339,51 @@ body > #container { height: auto; min-height: 100%; }
         });
     }
 
-    function update_sparql_endpoint() {
-        endpoint = $('#endpointoption input').val();
+    var current_ajax_check = null;
 
+    function update_sparql_endpoint(endpoint) {
+        var input = $('#endpointoption input'),
+            ajaxloader = $('#endpoint-ajax-loader');
+        
         // If endpoint is empty assume user wants to cancel
         if (!endpoint) {
-            $('#endpointoption input').val(sparql_endpoint);
+            input.val(sparql_endpoint);
+            // Trigger change so that the clear button can react
+            input.change();
             return
         }
 
-        $('#endpoint-ajax-loader').show();
         // reset css
-        $('#endpointoption input').css("background-color", "");
+        input.css("background-color", "");
 
+        // Return if no changes made
+        if (endpoint == sparql_endpoint)
+            return
+
+        // Return if we are currently checking this endpoint
+        if (current_ajax_check == endpoint)
+            return
+
+        ajaxloader.show();
+
+        current_ajax_check = endpoint;
         $.ajax({
             url: endpoint,
             data: $.param({'query' : "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 1"}),
             //data: $.param({'query' : "ASK {?s ?p ?o}"}), // Use SELECT should be supported by all back-ends
             success: function(data, textStatus, xhr) {
+                current_ajax_check = null;
+
                 if (data) {
-                    $('#endpoint-ajax-loader').hide();
+                    ajaxloader.hide();
                     sparql_endpoint = endpoint;
                     $.cookie('deniz_endpoint', sparql_endpoint);
-                    $('#endpointoption input').hide();
-                    $('#endpointoption .optionvalue span').html(sparql_endpoint);
-                    $('#endpointoption .optionvalue').show();
 
                     // Add endpoint to combobox
-                    if ($("#endpoints option[value='" + sparql_endpoint + "']").length == 0) {
-                        $("<option/>").prop("value", sparql_endpoint).appendTo("#endpoints");
+                    var endpoints = input.autocomplete("option", "source");
+                    if ($.inArray(sparql_endpoint, endpoints) < 0) {
+                        endpoints.splice(0,0,sparql_endpoint);
+                        input.autocomplete("option", "source", endpoints);
                         
                         // Remember the endpoint
                         var user_endpoints_cookie = $.cookie('deniz_user_endpoints'),
@@ -366,13 +392,15 @@ body > #container { height: auto; min-height: 100%; }
                         $.cookie('deniz_user_endpoints', user_endpoints.join(','));
                     }
                 } else {
-                    $('#endpoint-ajax-loader').hide();
-                    $('#endpointoption input').css("background-color", "red");
+                    ajaxloader.hide();
+                    input.css("background-color", "red");
                 }
             },
             error: function(req, st, err) {
-                $('#endpoint-ajax-loader').hide();
-                $('#endpointoption input').css("background-color", "red");
+                current_ajax_check = null;
+
+                ajaxloader.hide();
+                input.css("background-color", "red");
             }
         });
     }
@@ -384,14 +412,80 @@ body > #container { height: auto; min-height: 100%; }
             sparql_endpoint = endpoint;
         }
 
+        /* Endpoint configuration */
+
         // Add user endpoints to combobox
         var user_endpoints_cookie = $.cookie('deniz_user_endpoints'),
-            user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array();
-        $.each(user_endpoints, function(idx, endpoint) {
-            if ($("#endpoints option[value='" + endpoint + "']").length == 0) {
-                $("<option/>").prop("value", endpoint).appendTo("#endpoints");
+            user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array(),
+            endpoints = $.merge([], user_endpoints);
+        $.merge(endpoints, default_endpoints);
+        $("input#endpoint").autocomplete({
+            source: endpoints,
+            minLength: 0,
+            appendTo: '#sparql',
+            position: { my: "right top", at: "right bottom", collision: "none" },
+            select: function(event, ui) {
+                var elem = $(this);
+                update_sparql_endpoint(ui.item.value);
+                
+                elem.blur();
+            },
+        }).blur(function() {
+                var elem = $(this);
+                // Catch change from user input and following blur
+                update_sparql_endpoint(elem.val())
+        }).keydown(function(event) {
+            // React to Return on input field and use user specified value
+            if (event.keyCode == 13) {
+                var elem = $(this);
+                update_sparql_endpoint(elem.val());
+                // Close autocomplete menu and give up focus
+                elem.autocomplete("close");
+                elem.blur();
             }
+        }).data("autocomplete")._renderItem = function(ul, item) {
+            // TODO expensive here through iteration, store globally
+            var user_endpoints_cookie = $.cookie('deniz_user_endpoints'),
+                user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array();
+            
+            // Mark user specified items for CSS styling
+            var class = $.inArray(item.value, user_endpoints) >= 0 ? 'user' : 'default'
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .addClass(class)
+                .append("<a>" + item.label + "</a>")
+                .appendTo(ul);
+        };
+        $('#endpoint-container a').click(function() {
+            var elem = $(this),
+                input = $('#endpointoption input');
+            // Clear value and reset css
+            input.val("");
+            $('#endpointoption input').css("background-color", "");
+            
+            // close if already visible
+            if ( input.autocomplete( "widget" ).is( ":visible" ) ) {
+                 input.autocomplete( "close" );
+                 return;
+            }
+
+            // pass empty string as value to search for, displaying all results
+            input.autocomplete("search", "");
+            input.focus();
+            elem.hide();
+            return false;
         });
+        $('#endpointoption input').change(function() {
+            var elem = $(this);
+            $('#endpoint-container a').show();
+        });
+        // Set endpoint to widget
+        $('#endpointoption input').val(sparql_endpoint);
+        $('#sparqloptionsform').submit(function() {
+            return false;
+        });
+
+        /* Load page */
 
         // Tell jQuery to always tell the server that we expect sparql results in JSON
         $.ajaxSetup({
@@ -407,48 +501,28 @@ body > #container { height: auto; min-height: 100%; }
             return false;
         });
         $('#query').resizable({ alsoResize: '.CodeMirror-wrapping' });
-
-        // Show normal text by default and switch to form on click
-        $('#endpointoption .optionvalue span').html(sparql_endpoint);
-        $('#endpointoption .optionvalue').click(function() {
-            $('#endpointoption input').val(sparql_endpoint);
-            $('#endpointoption .optionvalue').hide();
-            $('#endpointoption input').show();
-            $('#endpointoption input').focus();
-        });
-        $('#endpointoption input').change(update_sparql_endpoint);
-        $('#endpointoption input').blur(function() {
-            if (sparql_endpoint == $('#endpointoption input').val()) {
-                $('#endpointoption .optionvalue').show();
-                $('#endpointoption input').hide();
-            }
-        });
-        $('#sparqloptionsform').submit(function() {
-            return false;
-        });
     });
 //]]>
 </script>
 <h1><a href="#">Deniz</a>, an easy RDF browser</h1>
 <div id="sparql">
+    <!-- 
+    Endpoint configuration
+    -->
     <div id="sparqloptions">
         <div id="endpointoption">Endpoint:
-            <span class="optionvalue" title="Click to edit">
-                <span></span>
-                <img class="edithint" src="lib/pencil.png" alt="edit"/>
-            </span>
             <form action="#" name="sparqloptionsform" id="sparqloptionsform">
-                <input list="endpoints" type="url" name="endpoint"/>
-                <datalist id="endpoints">
-                    <option value="http://dbpedia.org/sparql"></option>
-                    <option value="http://qcrumb.com/sparql"></option>
-                    <option value="http://data.semanticweb.org/sparql"></option>
-                    <option value="http://uriburner.com/sparql/"></option>
-                </datalist>
-                <span id="endpoint-ajax-loader"><img src="lib/ajax-loader-small.gif" alt="loading"/></span>
+                <div id="endpoint-container">
+                    <input id="endpoint" type="text" name="endpoint"/>
+                    <a href="#">×</a>
+                    <span id="endpoint-ajax-loader"></span>
+                </div>
             </form>
         </div>
     </div>
+    <!-- 
+    Query input
+    -->
     <div class="caption">Input and execute your SPARQL query here:</div>
     <div id="query"></div>
     <div id="buttons">
