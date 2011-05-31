@@ -69,6 +69,7 @@ body > #container { height: auto; min-height: 100%; }
                          "http://uriburner.com/sparql/",
                          "http://semantic.ckan.net/sparql/"],
     sparql_endpoint = default_endpoints[0];
+    cookie_expiration = 30; // Cookie expiration date in days
 
     /*
      * Helper
@@ -377,7 +378,7 @@ body > #container { height: auto; min-height: 100%; }
                 if (data) {
                     ajaxloader.hide();
                     sparql_endpoint = endpoint;
-                    $.cookie('deniz_endpoint', sparql_endpoint);
+                    $.cookie('deniz_endpoint', sparql_endpoint, {expires: cookie_expiration});
 
                     // Add endpoint to combobox
                     var endpoints = input.autocomplete("option", "source");
@@ -389,7 +390,7 @@ body > #container { height: auto; min-height: 100%; }
                         var user_endpoints_cookie = $.cookie('deniz_user_endpoints'),
                             user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array();
                         user_endpoints.push(sparql_endpoint);
-                        $.cookie('deniz_user_endpoints', user_endpoints.join(','));
+                        $.cookie('deniz_user_endpoints', user_endpoints.join(','), {expires: cookie_expiration});
                     }
                 } else {
                     ajaxloader.hide();
