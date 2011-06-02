@@ -9,7 +9,6 @@ body { font-family: Verdana,Arial,sans-serif; }
 h1 { font-size: 1.3em; }
 h1 a { text-decoration: none; color: black; }
 .ui-widget { font-size: 1em; }
-.ui-menu { z-index: 1002 !important } /* dropdown menu is overlapped by resize handel */
 #content { padding: 6px; }
 /* Endpoint input widget */
 #sparqloptions { float: right; }
@@ -23,6 +22,9 @@ h1 a { text-decoration: none; color: black; }
 .ui-autocomplete li { font-size: 0.9em; }
 /* Query */
 #query { height: 6em; border: 1px #ddd solid; padding: 3px; }
+#query .CodeMirror-wrapping { width: 100% }
+.ui-resizable-helper { border: dotted black 1px; }
+.ui-resizable-handle { background-color: #ddd; z-index: 1 }
 .caption { margin-bottom: 5px; }
 #buttons button { float: right; }
 .resulttable { border-spacing: 0; clear: both; margin-bottom: 20px; }
@@ -501,7 +503,12 @@ body > #container { height: auto; min-height: 100%; }
             window.location.hash = editor.getCode().replace(/\n/g, ' ');
             return false;
         });
-        $('#query').resizable({ alsoResize: '.CodeMirror-wrapping' });
+        $('#query').resizable({
+            alsoResize: '.CodeMirror-wrapping',
+            handles: 's',
+            // Use helper as resizing the iframe synchronously yields weird mouse behavious in both Firefox4 & Gooogle Chrome
+            helper: "ui-resizable-helper"
+        });
     });
 //]]>
 </script>
