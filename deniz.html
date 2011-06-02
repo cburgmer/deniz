@@ -507,7 +507,11 @@ body > #container { height: auto; min-height: 100%; }
             alsoResize: '.CodeMirror-wrapping',
             handles: 's',
             // Use helper as resizing the iframe synchronously yields weird mouse behavious in both Firefox4 & Gooogle Chrome
-            helper: "ui-resizable-helper"
+            helper: "ui-resizable-helper",
+            // Workaround jQuery UI setting an absolute width, see http://stackoverflow.com/questions/3628194/how-to-resize-only-horizontally-or-vertically-with-jquery-ui-resizable/6218549#6218549
+            stop: function(event, ui) {
+                $('#query').css("width", '');
+            }
         });
     });
 //]]>
