@@ -394,6 +394,8 @@ body > #container { height: auto; min-height: 100%; }
                         user_endpoints.push(sparql_endpoint);
                         $.cookie('deniz_user_endpoints', user_endpoints.join(','), {expires: cookie_expiration});
                     }
+
+                    $("body").trigger("reload");
                 } else {
                     ajaxloader.hide();
                     input.css("background-color", "red");
@@ -498,6 +500,12 @@ body > #container { height: auto; min-height: 100%; }
         });
 
         $.history.init(load_page);
+
+        $('body').bind("reload", function() {
+            var hash = window.location.hash.substr(1);
+            load_page(hash);
+        });
+
         $('#executebtn').button();
         $('#executebtn').click(function() {
             window.location.hash = editor.getCode().replace(/\n/g, ' ');
