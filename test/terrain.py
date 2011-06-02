@@ -55,18 +55,9 @@ def clear_data(scenario):
     world.test_endpoint.clear_data()
 
 def _set_endpoint(value):
-    # Get the span that triggers the form visibility
-    elem = world.browser.find_element_by_xpath('//*[@id="endpointoption"]/span[@class="optionvalue"]')
-
     # Find endpoint field
-    # Cannot use short cut functions as they test on visibility
-    #text_field = find_field_by_name(world.browser, 'text', "endpoint")
-    #text_field.clear()
-    text_field = world.browser.find_element_by_xpath('//input[@name="endpoint"]')
-
-    # Clear the field that has the focus once we click the span
-    elem.click()
-    text_field.send_keys(''.join(Keys.BACK_SPACE for _ in range(30)))
+    text_field = find_field_by_name(world.browser, 'text', "endpoint")
+    text_field.clear()
 
     text_field.send_keys(value + Keys.RETURN)
 
