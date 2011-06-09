@@ -14,7 +14,7 @@ Installing using pip (& easy_install)
 Run::
 
     $ pip install lettuce_webdriver nose
-    $ pip install -e git://github.com/cburgmer/sparqlprotocolproxy.git
+    $ pip install -e git://github.com/cburgmer/sparqlprotocolproxy.git#egg=sparqlprotocolproxy
     $ easy_install surf.rdflib # currently not installable by pip
 
 Running the tests
