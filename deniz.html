@@ -454,10 +454,10 @@ body > #container { height: auto; min-height: 100%; }
                 user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array();
             
             // Mark user specified items for CSS styling
-            var class = $.inArray(item.value, user_endpoints) >= 0 ? 'user' : 'default'
+            var elem_class = $.inArray(item.value, user_endpoints) >= 0 ? 'user' : 'default'
             return $("<li></li>")
                 .data("item.autocomplete", item)
-                .addClass(class)
+                .addClass(elem_class)
                 .append("<a>" + item.label + "</a>")
                 .appendTo(ul);
         };
