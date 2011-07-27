@@ -395,6 +395,8 @@ body > #container { height: auto; min-height: 100%; }
                         user_endpoints.push(sparql_endpoint);
                         $.cookie('deniz_user_endpoints', user_endpoints.join(','), {expires: cookie_expiration});
                     }
+
+                    $("body").trigger("reload");
                 } else {
                     ajaxloader.hide();
                     input.css("background-color", "red");
@@ -453,10 +455,10 @@ body > #container { height: auto; min-height: 100%; }
                 user_endpoints = user_endpoints_cookie ? user_endpoints_cookie.split(/,/) : new Array();
             
             // Mark user specified items for CSS styling
-            var class = $.inArray(item.value, user_endpoints) >= 0 ? 'user' : 'default'
+            var elem_class = $.inArray(item.value, user_endpoints) >= 0 ? 'user' : 'default'
             return $("<li></li>")
                 .data("item.autocomplete", item)
-                .addClass(class)
+                .addClass(elem_class)
                 .append("<a>" + item.label + "</a>")
                 .appendTo(ul);
         };
@@ -499,6 +501,12 @@ body > #container { height: auto; min-height: 100%; }
         });
 
         $.history.init(load_page);
+
+        $('body').bind("reload", function() {
+            var hash = window.location.hash.substr(1);
+            load_page(hash);
+        });
+
         $('#executebtn').button();
         $('#executebtn').click(function() {
             window.location.hash = editor.getCode().replace(/\n/g, ' ');
@@ -507,8 +515,12 @@ body > #container { height: auto; min-height: 100%; }
         $('#query').resizable({
             alsoResize: '.CodeMirror-wrapping',
             handles: 's',
-            // Use helper as resizing the iframe synchronously yields weird mouse behavious in both Firefox4 & Gooogle Chrome
-            helper: "ui-resizable-helper"
+            // Use helper as resizing the iframe synchronously yields weird mouse behavious in both Firefox4 & Google Chrome, see http://bugs.jqueryui.com/ticket/3176
+            helper: "ui-resizable-helper",
+            // Workaround jQuery UI setting an absolute width, see http://stackoverflow.com/questions/3628194/how-to-resize-only-horizontally-or-vertically-with-jquery-ui-resizable/6218549#6218549
+            stop: function(event, ui) {
+                $('#query').css("width", '');
+            }
         });
     });
 //]]>
