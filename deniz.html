@@ -3,6 +3,8 @@
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
 <link type="text/css" href="lib/jquery-ui.css" rel="stylesheet"/>
+<link type="text/css" href="lib/codemirror.css" rel="stylesheet"/>
+<link type="text/css" href="lib/codemirror-default.css" rel="stylesheet"/>
 <style type="text/css">
 <!--
 body { font-family: Verdana,Arial,sans-serif; }
@@ -21,8 +23,8 @@ h1 a { text-decoration: none; color: black; }
 .ui-autocomplete li.user + li.default { border-top: solid lightgray 1px; }
 .ui-autocomplete li { font-size: 0.9em; }
 /* Query */
-#query { height: 6em; border: 1px #ddd solid; padding: 3px; }
-#query .CodeMirror-wrapping { width: 100% }
+.CodeMirror { min-height: 6em; border: 1px #ddd solid; padding: 3px; font-size: 1.1em; }
+.CodeMirror-scroll { height: auto; overflow-y: hidden; overflow-x: auto; }
 .ui-resizable-helper { border: dotted black 1px; }
 .ui-resizable-handle { background-color: #ddd; z-index: 1 }
 .caption { margin-bottom: 5px; }
@@ -49,7 +51,7 @@ body > #container { height: auto; min-height: 100%; }
 </style>
 <script type="text/javascript" src="lib/jquery.js"></script>
 <script type="text/javascript" src="lib/jquery-ui.js"></script>
-<script type="text/javascript" src="lib/codemirror.js"></script>
+<script type="text/javascript" src="lib/codemirror-compressed.js"></script>
 <script type="text/javascript" src="lib/jquery.history.js"></script>
 <script type="text/javascript" src="lib/jquery.cookie.js"></script>
 <title>Deniz, an easy RDF browser</title>
@@ -508,19 +510,10 @@ body > #container { height: auto; min-height: 100%; }
 
         $('#executebtn').button();
         $('#executebtn').click(function() {
-            window.location.hash = editor.getCode().replace(/\n/g, ' ');
+            window.location.hash = editor.getValue().replace(/\n/g, ' ');
             return false;
         });
-        $('#query').resizable({
-            alsoResize: '.CodeMirror-wrapping',
-            handles: 's',
-            // Use helper as resizing the iframe synchronously yields weird mouse behavious in both Firefox4 & Google Chrome, see http://bugs.jqueryui.com/ticket/3176
-            helper: "ui-resizable-helper",
-            // Workaround jQuery UI setting an absolute width, see http://stackoverflow.com/questions/3628194/how-to-resize-only-horizontally-or-vertically-with-jquery-ui-resizable/6218549#6218549
-            stop: function(event, ui) {
-                $('#query').css("width", '');
-            }
-        });
+
     });
 //]]>
 </script>
@@ -544,7 +537,9 @@ body > #container { height: auto; min-height: 100%; }
     Query input
     -->
     <div class="caption">Input and execute your SPARQL query here:</div>
-    <div id="query"></div>
+    <form>
+        <textarea id="query"></textarea>
+    </form>
     <div id="buttons">
         <button type="submit" id="executebtn" name="executebtn">
             <span class="ui-button-text">Execute</span>
@@ -591,21 +586,19 @@ body > #container { height: auto; min-height: 100%; }
 </div></div>
 <script type="text/javascript">
 //<![CDATA[
-    content = $('#query').text();
-    CodeMirrorConfig.height='6em';
-    var editor = new CodeMirror($('#query')[0], {
-        parserfile: "lib/codemirror_inframe.js",
-        stylesheet: "lib/sparqlcolors.css",
-        saveFunction: function() {
-            window.location.hash = editor.getCode().replace(/\n/g, ' ');
-        },
-        autoMatchParens: true,
-        content: function() {
+    var query_field = $('#query');
+    query_field.val(function() {
             if (window.location.hash && window.location.hash != '#')
                 return window.location.hash.replace(/^#/, '');
             else
                 return initial_query;
-        }()
+    }());
+    var editor = new CodeMirror.fromTextArea(query_field[0], {
+        mode: "application/x-sparql-query",
+        //saveFunction: function() {
+        //    window.location.hash = editor.getValue().replace(/\n/g, ' ');
+        //},
+        matchBrackets: true
     });
 //]]>
 </script>
