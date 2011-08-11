@@ -52,7 +52,7 @@ body > #container { height: auto; min-height: 100%; }
 <script type="text/javascript" src="lib/jquery.js"></script>
 <script type="text/javascript" src="lib/jquery-ui.js"></script>
 <script type="text/javascript" src="lib/codemirror-compressed.js"></script>
-<script type="text/javascript" src="lib/jquery.history.js"></script>
+<script type="text/javascript" src="lib/jquery.ba-hashchange.js"></script>
 <script type="text/javascript" src="lib/jquery.cookie.js"></script>
 <title>Deniz, an easy RDF browser</title>
 </head>
@@ -273,8 +273,9 @@ body > #container { height: auto; min-height: 100%; }
     }
 
     /* Page load triggered by forward/backward user action or linking to a hashed page */
-    function load_page(hash) {
-        if (hash == '' || hash == '#') {
+    function load_page() {
+        var hash = window.location.hash.substr(1);
+        if (hash == '') {
             $('.spo_results').hide();
             $('.result_container').empty();
             $('.query_results').hide();
@@ -501,12 +502,9 @@ body > #container { height: auto; min-height: 100%; }
             }
         });
 
-        $.history.init(load_page);
+        $(window).hashchange(load_page);
 
-        $('body').bind("reload", function() {
-            var hash = window.location.hash.substr(1);
-            load_page(hash);
-        });
+        load_page();
 
         $('#executebtn').button();
         $('#executebtn').click(function() {
