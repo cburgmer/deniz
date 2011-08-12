@@ -1,40 +1,139 @@
-body { font-family: Verdana,Arial,sans-serif; }
-h1 { font-size: 1.3em; }
-h1 a { text-decoration: none; color: black; }
-.ui-widget { font-size: 1em; }
-#content { padding: 6px; }
-/* Endpoint input widget */
-#sparqloptions { float: right; }
-#endpointoption form { display: inline-block; }
-#endpointoption input { width: 20em; border: 1px #ddd solid; height: 20px;}
-#endpoint-container { position: relative; }
-#endpoint-container a { position: absolute; top: 0; right: 5px; height: 20px; border: none; background: none; font: heavy blue 25px/25px arial, sans-serif; text-decoration: none; color: #aaf; }
-#endpoint-container a:hover { color: #55f; }
-#endpoint-ajax-loader { position: absolute; top: 0; right: 5px; height: 24px; width: 16px; vertical-align: middle; display: none; background: url("lib/ajax-loader-small.gif") 0 center no-repeat; }
-.ui-autocomplete li.user + li.default { border-top: solid lightgray 1px; }
-.ui-autocomplete li { font-size: 0.9em; }
-/* Query */
-.CodeMirror { min-height: 6em; border: 1px #ddd solid; padding: 3px; font-size: 1.1em; }
-.CodeMirror-scroll { height: auto; overflow-y: hidden; overflow-x: auto; }
-.ui-resizable-helper { border: dotted black 1px; }
-.ui-resizable-handle { background-color: #ddd; z-index: 1 }
-.caption { margin-bottom: 5px; }
-#buttons button { float: right; }
-.resulttable { border-spacing: 0; clear: both; margin-bottom: 20px; }
-.resulttable th { border-bottom: 1px solid black; }
-.results tr.odd { background-color: #e9e9f9; }
-.results tr.even { background-color: #eef; }
-.results td { padding: 5px; }
-.morebtn { text-align: center; }
-#footer { width: 100%;}
-#footer #footercontent { color: #888; padding: 5px; }
-#footer a { font-weight: bold; color: #888; text-decoration: none; }
-#footer a:visited { color: #666; }
-#footer a:hover { text-decoration:underline; }
-#footer a:active { text-decoration:underline; }
-.spo_results td { min-width: 8em; }
+/* General */
+body { 
+    font-family: Verdana,Arial,sans-serif;
+}
+h1 { 
+    font-size: 1.3em;
+}
+h1 a { 
+    text-decoration: none; color: black; 
+}
+.ui-widget { 
+    font-size: 1em;
+}
+#content { 
+    padding: 6px;
+}
 
-html, body, #container { height: 100%; margin: 0; padding: 0; }
-body > #container { height: auto; min-height: 100%; }
-#content { padding-bottom: 3.5em; }
-#footer { clear: both; position: relative; z-index: 10; height: 3.5em; margin-top: -3.5em; }
+/* Endpoint input widget */
+#sparqloptions { 
+    float: right;
+}
+#endpointoption form {
+    display: inline-block; 
+}
+#endpointoption input { 
+    width: 20em; border: 1px #ddd solid; height: 20px;
+}
+#endpoint-container { 
+    position: relative;
+}
+#endpoint-container a { 
+    position: absolute; 
+    top: 0; right: 5px; 
+    height: 20px; 
+    border: none; 
+    background: none; 
+    font: heavy blue 25px/25px arial, sans-serif; 
+    text-decoration: none; 
+    color: #aaf; 
+}
+#endpoint-container a:hover { 
+    color: #55f; 
+}
+#endpoint-ajax-loader { 
+    position: absolute; 
+    top: 0; right: 5px; 
+    height: 24px; 
+    width: 16px; 
+    vertical-align: middle; 
+    display: none; 
+    background: url("lib/ajax-loader-small.gif") 0 center no-repeat; 
+}
+.ui-autocomplete li.user + li.default { 
+    border-top: solid lightgray 1px; 
+}
+.ui-autocomplete li { 
+    font-size: 0.9em; 
+}
+/* Query editor */
+.CodeMirror { 
+    min-height: 6em; border: 1px #ddd solid; padding: 3px; font-size: 1.1em; 
+}
+.CodeMirror-scroll { 
+    height: auto; overflow-y: hidden; overflow-x: auto; 
+}
+.caption { 
+    margin-bottom: 5px; 
+}
+#buttons button { 
+    float: right; 
+}
+
+/* Result view */
+.resulttable { 
+    border-spacing: 0; clear: both; margin-bottom: 20px; 
+}
+.resulttable th { 
+    border-bottom: 1px solid black; 
+}
+.results tr.odd { 
+    background-color: #e9e9f9; 
+}
+.results tr.even { 
+    background-color: #eef; 
+}
+.results td { 
+    padding: 5px; 
+}
+.morebtn { 
+    text-align: center; 
+}
+.spo_results td { 
+    min-width: 8em; 
+}
+
+/* Footer */
+#footer { 
+    width: 100%;
+}
+#footer #footercontent { 
+    color: #888;
+    padding: 5px; 
+}
+#footer a { 
+    font-weight: bold;
+    color: #888;
+    text-decoration: none; 
+}
+#footer a:visited { 
+    color: #666; 
+}
+#footer a:hover { 
+    text-decoration:underline; 
+}
+#footer a:active { 
+    text-decoration:underline; 
+}
+
+/* Footer solution: Make the footer sticky at bottom of page, but make it move 
+ * down once content grows */
+html, body, #container { 
+    height: 100%; 
+    margin: 0; 
+    padding: 0; 
+}
+body > #container { 
+    height: auto; 
+    min-height: 100%; 
+}
+#content { 
+    padding-bottom: 3.5em; 
+}
+#footer { 
+    clear: both;
+    position: relative;
+    z-index: 10;
+    height: 3.5em;
+    margin-top: -3.5em; 
+}
