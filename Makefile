@@ -27,9 +27,12 @@ compress:
 	for libfile in codemirror.js sparql.js jquery.ba-hashchange.js jquery.cookie.js jquery.js jquery-ui.js ; do \
 		java -jar $(CLOSUREFILE) --js_output_file=$(BUILDDIR)/lib/$$libfile --js=./lib/$$libfile ; \
 	done
-	for libfile in codemirror.css codemirror-default.css jquery-ui.css ; do \
+	for libfile in codemirror.css codemirror-default.css ; do \
 		java -jar $(YUIFILE) ./lib/$$libfile -o $(BUILDDIR)/lib/$$libfile ; \
 	done
+
+	java -jar $(CSSEMBEDFILE) --skip-missing ./lib/jquery-ui.css -o $(BUILDDIR)/jquery-ui_datauri.css
+	java -jar $(YUIFILE) $(BUILDDIR)/jquery-ui_datauri.css -o $(BUILDDIR)/lib/jquery-ui.css
 
 	cd $(BUILDDIR) && python ../embed_media.py ../deniz.html > deniz.html
 	echo "Successfully build app into $(BUILDDIR)/deniz.html"
