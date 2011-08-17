@@ -118,7 +118,7 @@ function do_query(user_query, query_str) {
         if (!query_str) {
             query_str = limit_query(user_query)
         }
-        $('#query_results .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
+        $('#query_results .result_container').html($('<span>').addClass('loading'));
         $.ajax({
             type : 'GET',
             dataType : 'json',
@@ -200,7 +200,7 @@ function do_spo(iri) {
     $('.query_results').hide();
     $('.result_container').empty();
     $('.spo_results').show();
-    $('.spo_results .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
+    $('.spo_results .result_container').html($('<span>').addClass('loading'));
     $.each({'subject_results': 'SELECT ?p ?o WHERE { ' + iri + ' ?p ?o} LIMIT ' + force_result_limit,
             'predicate_results': 'SELECT ?s ?o WHERE {?s ' + iri + ' ?o} LIMIT ' + force_result_limit,
             'object_results': 'SELECT ?s ?p WHERE {?s ?p ' + iri + '} LIMIT ' + force_result_limit},
@@ -232,7 +232,7 @@ function load_page() {
 
 function load_browsingmenu() {
     // Query named graphs
-    $('#browsebygraphs .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
+    $('#browsebygraphs .result_container').html($('<span>').addClass('loading'));
     $.ajax({
         type : 'GET',
         dataType : 'json',
@@ -257,7 +257,7 @@ function load_browsingmenu() {
     });
 
     // Query concepts
-    $('#browsebyconcepts .result_container').html('<img src="lib/ajax-loader.gif" alt="loading"/>');
+    $('#browsebyconcepts .result_container').html($('<span>').addClass('loading'));
     $.ajax({
         type : 'GET',
         dataType : 'json',
