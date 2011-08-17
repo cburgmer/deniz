@@ -23,3 +23,18 @@ Simply::
 
     $ lettuce test/
 
+
+Building the one-page app
+=========================
+Deniz can be packed into one HTML file by embedding images, CSS and Javascript.
+
+Install:
+  * Python (>= 2.6, < 3.0)
+  * Java JRE
+
+Download the compression libraries and build the app::
+
+    $ make build-update
+    $ make
+
+The final file is stored under .build/deniz.html
