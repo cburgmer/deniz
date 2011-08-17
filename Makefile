@@ -24,7 +24,7 @@ compress:
 	java -jar $(CSSEMBEDFILE) ./deniz.css -o $(BUILDDIR)/deniz_datauri.css
 	java -jar $(YUIFILE) $(BUILDDIR)/deniz_datauri.css -o $(BUILDDIR)/deniz.css
 
-	for libfile in codemirror-compressed.js jquery.ba-hashchange.js jquery.cookie.js jquery.js jquery-ui.js ; do \
+	for libfile in codemirror.js sparql.js jquery.ba-hashchange.js jquery.cookie.js jquery.js jquery-ui.js ; do \
 		java -jar $(CLOSUREFILE) --js_output_file=$(BUILDDIR)/lib/$$libfile --js=./lib/$$libfile ; \
 	done
 	for libfile in codemirror.css codemirror-default.css jquery-ui.css ; do \
