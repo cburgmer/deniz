@@ -374,7 +374,7 @@ $(function() {
             update_sparql_endpoint(ui.item.value);
             
             elem.blur();
-        },
+        }
     }).blur(function() {
             var elem = $(this);
             // Catch change from user input and following blur
