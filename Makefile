@@ -38,15 +38,19 @@ compress:
 	echo "Successfully build app into $(BUILDDIR)/deniz.html"
 
 build:
+	mkdir -p $(BUILDDIR)/lib
 	$(MAKE) compress;
 	
 build-update:
 	$(MAKE) clean;
-	mkdir $(BUILDDIR) $(BUILDDIR)/lib $(CLOSUREDIR) $(YUIDIR) $(CSSEMBEDDIR);
+	mkdir $(BUILDDIR) $(CLOSUREDIR) $(YUIDIR) $(CSSEMBEDDIR);
 	cd $(CLOSUREDIR); wget -q $(CLOSUREURL) -O file.zip; unzip file.zip;
 	cd $(YUIDIR); wget -q $(YUIURL) -O file.zip; unzip file.zip;
 	cd $(CSSEMBEDDIR); wget -q $(CSSEMBEDURL);
 	
 clean:
+	find $(BUILDDIR) -maxdepth 1 -type f -exec rm -f "{}" \;
+	rm -Rf $(BUILDDIR)/lib
+
+fullclean:
 	rm -Rf $(BUILDDIR);
-	
