@@ -1,9 +1,10 @@
 rvm:
    - 1.9.3
 before_script:
-  - pip install lettuce_webdriver nose
-  - pip install -e git://github.com/cburgmer/sparqlprotocolproxy.git#egg=sparqlprotocolproxy
-  - easy_install surf.rdflib
+  - sudo pip install lettuce_webdriver nose
+  - sudo pip install -e git://github.com/cburgmer/sparqlprotocolproxy.git#egg=sparqlprotocolproxy
+  - sudo easy_install surf.rdflib
+  - sh -e /etc/init.d/xvfb start
 script:
   - lettuce test/
 notifications:
