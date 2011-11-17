@@ -6,6 +6,6 @@ before_script:
   - sudo easy_install surf.rdflib
   - sh -e /etc/init.d/xvfb start
 script:
-  - lettuce test/
+  - export DISPLAY=:99.0 && lettuce test/
 notifications:
   email: cburgmer@ira.uka.de
