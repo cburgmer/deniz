@@ -32,6 +32,13 @@ A Python proxy server called `sparqlprocotolproxy` offers a proxy to a SPARQL
 endpoint and supports CORS. See https://github.com/cburgmer/sparqlprotocolproxy
 for more information.
 
+What else
+=========
+
+Deniz includes a test suite. Check it out on http://travis-ci.org/#!/cburgmer/deniz. |travis_result|
+
+.. |travis_result| image:: https://secure.travis-ci.org/cburgmer/deniz.png
+
 Contact
 =======
 Please report bugs to http://github.com/cburgmer/deniz/issues.
