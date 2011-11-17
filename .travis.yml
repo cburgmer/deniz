@@ -1,0 +1,10 @@
+rvm:
+   - 1.9.3
+before_script:
+  - pip install lettuce_webdriver nose
+  - pip install -e git://github.com/cburgmer/sparqlprotocolproxy.git#egg=sparqlprotocolproxy
+  - easy_install surf.rdflib
+script:
+  - lettuce test/
+notifications:
+  email: cburgmer@ira.uka.de
